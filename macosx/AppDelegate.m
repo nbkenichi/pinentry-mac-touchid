@@ -217,10 +217,11 @@ static int mac_cmd_handler (pinentry_t pe) {
 				  //				  printf("reuslt %d\n", result);
 				} // end of autoreleasepool
 
+				int len = strlen(passphrase);
 				if (result == 1) {
 				  passphrase = nil;
+				  len = 0;
 				}
-				int len = strlen(passphrase);
 				pinentry_setbufferlen(pe, len + 1);
 
 				if (result == 1) {
