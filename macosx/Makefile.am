@@ -1,5 +1,5 @@
-noinst_PROGRAMS = pinentry-mac
-libexec_PROGRAMS = pinentry-mac.app
+noinst_PROGRAMS = pinentry-mac-touchid
+libexec_PROGRAMS = pinentry-mac-touchid.app
 
 if FALLBACK_CURSES
 ncurses_include = $(NCURSES_INCLUDE)
@@ -16,7 +16,7 @@ AM_OBJCFLAGS = $(COMMON_CFLAGS) $(ncurses_include) -I$(top_srcdir)/secmem -I$(to
 LDADD = ../pinentry/libpinentry.a ../secmem/libsecmem.a \
 	$(COMMON_LIBS) $(LIBCAP) $(libcurses)
 
-pinentry_mac_SOURCES = KeychainSupport.m NSStringExtensions.m PinentryMac.m \
+pinentry_mac_touchid_SOURCES = KeychainSupport.m NSStringExtensions.m PinentryMac.m \
 	ShortcutHandlingFields.m PassphraseLengthFormatter.m AppDelegate.m main.m
 
 app_RESOURCES = Icon.icns
@@ -29,7 +29,7 @@ app_RES = $(app_NIBS) $(app_LPROJS) $(app_RESOURCES)
 
 CLEANFILES = $(app_NIBS)
 
-temp_app_dir = pinentry-mac.app_temp
+temp_app_dir = pinentry-mac-touchid.app_temp
 contents_dir = $(temp_app_dir)/Contents
 
 
@@ -48,10 +48,10 @@ clean-local:
 clean-libexecPROGRAMS:
 	[[ -z "$(libexec_PROGRAMS)" ]] || rm -rf $(libexec_PROGRAMS)
 
-pinentry-mac.app$(EXEEXT): pinentry-mac $(app_RES) Info.plist
-	@rm -rf pinentry-mac.app $(temp_app_dir)
+pinentry-mac-touchid.app$(EXEEXT): pinentry-mac-touchid $(app_RES) Info.plist
+	@rm -rf pinentry-mac-touchid.app $(temp_app_dir)
 	mkdir -p $(contents_dir)/MacOS $(contents_dir)/Resources
 	cp -R $(app_RES) $(contents_dir)/Resources/
 	./copyInfoPlist.sh Info.plist $(contents_dir)
-	cp pinentry-mac $(contents_dir)/MacOS/
-	mv $(temp_app_dir) pinentry-mac.app
+	cp pinentry-mac-touchid $(contents_dir)/MacOS/
+	mv $(temp_app_dir) pinentry-mac-touchid.app

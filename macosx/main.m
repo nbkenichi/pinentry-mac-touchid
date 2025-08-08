@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
 		}
 #endif
 
-		pinentry_init("pinentry-mac");
+		pinentry_init("pinentry-mac-touchid");
 
 		/* Consumes all arguments.  */
 		pinentry_parse_opts(argc, argv);
