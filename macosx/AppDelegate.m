@@ -25,6 +25,9 @@
 #import "KeychainSupport.h"
 #import "NSStringExtensions.h"
 
+#import <dispatch/dispatch.h>
+#import <Foundation/Foundation.h>
+#import <LocalAuthentication/LocalAuthentication.h>
 
 @implementation AppDelegate
 
@@ -186,9 +189,43 @@ static int mac_cmd_handler (pinentry_t pe) {
 			NSString *passphraseFromKeychain = getPassphraseFromKeychain(cacheId, &doNotUseKeychain);
 			const char *passphrase = passphraseFromKeychain.UTF8String;
 			if (passphrase && passphraseFromKeychain.length) { // A non-empty password was found.
+				// NSString *keyinfo = [NSString gpgStringWithCString:pe->keyinfo];
+				NSDictionary *userData = parseUserData(pe);
+				NSString *description = userData[@"description"];
+				//				printf("descriptionText %s\n", description.UTF8String);
+				//				printf("keyinfo.UTF8String %s\n", keyinfo.UTF8String);
+				//				printf("passphraseFromKeychain.UTF8String %s\n", passphrase);
+				__block int result = 1;
+
+				@autoreleasepool {
+				  //				  NSString *reason = description;
+				  NSString *reason = [description stringByReplacingOccurrencesOfString: @"Please enter the passphrase to " withString: @""];
+				  LAContext *context = [[LAContext alloc] init];
+				  dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+				  [context evaluatePolicy: kLAPolicyDeviceOwnerAuthentication localizedReason: reason
+						    reply:^(BOOL success, NSError * _Nullable error) {
+				      if (success) {
+					result = 0;
+				      }
+				      else {
+					NSLog(@"%s\n", error.localizedDescription.UTF8String);
+					result = 1;
+				      }
+				      dispatch_semaphore_signal(semaphore);
+				    }];
+				  dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+				  //				  printf("reuslt %d\n", result);
+				} // end of autoreleasepool
+
+				if (result == 1) {
+				  passphrase = nil;
+				}
 				int len = strlen(passphrase);
 				pinentry_setbufferlen(pe, len + 1);
-				if (pe->pin) {
+
+				if (result == 1) {
+				  //				  printf("touch id cancel\n", result);
+				} else if (pe->pin) {
 					lastCacheIdUsed = cacheId;
 
 					// Write the password into pe->pin and return its length.
