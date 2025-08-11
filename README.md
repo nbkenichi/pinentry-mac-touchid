@@ -4,20 +4,38 @@ This is a fork from pinentry-mac of [GPGTools/pinentry](https://github.com/GPGTo
 
 ## How does Touch ID work 🫆
 When an appropriate passphrase is found in iCloud keychain, original pinentry-mac passes it silently to gpg-agent.
-But pinentry-mac-touchid requests TouchID authentication before passing it.
+But pinentry-mac-touchid requests Touch ID authentication before passing it.
 If you cancel, the original window for entering the passphrase will be displayed.
 
+## Prerequisites 🫆
+Before installation of pinentry-mac-touchid, it is recommended to build original pinentry-mac to verify your environment and libraries with Homebrew or MacPorts.
+Also You should use original pinentry-mac to understand its expected behaviors and required permissions of iCloud keychain.
+They are same as pinentry-mac-touchid.
+
+### gpg-agent.conf:
+```
+pinentry-program /Applications/MacPorts/pinentry-mac.app/Contents/MacOS/pinentry-mac
+```
+
 ## Installation 🫆
-> ```bash
+> ```sh
 > ./autogen.sh
 > ./configure --disable-doc --disable-ncurses --disable-silent-rules --enable-maintainer-mode
 > make
 > mv macosx/pinentry-mac-touchid.app your_favorite_folder
+> killall gpg-agent
+
+### gpg-agent.conf:
+```
+default-cache-ttl 0
+max-cache-ttl 0
+pinentry-program /your_favorite_folder/pinentry-mac-touchid.app/Contents/MacOS/pinentry-mac-touchid
+```
 
 ## Acknowledgment 🫆
-TouchID routine is influenced by [prbinu/touch2sudo](https://github.com/prbinu/touch2sudo). I sincerely express my gratitude for the public release of touchsudo.
+Touch ID routine is influenced by [prbinu/touch2sudo](https://github.com/prbinu/touch2sudo). I sincerely express my gratitude for the public release of touch2sudo.
 
-## README of original pinentry 🫆
+## README of original pinentry ⌨️
 
 ```
 PINEntry
