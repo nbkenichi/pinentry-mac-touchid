@@ -3,13 +3,13 @@ This is a fork from pinentry-mac of [GPGTools/pinentry](https://github.com/GPGTo
 **🫆 Touch ID 🫆** support is included.
 
 ## How does Touch ID work 🫆
-When an appropriate passphrase is found in iCloud keychain, original pinentry-mac passes it silently to gpg-agent.
-But pinentry-mac-touchid requests Touch ID authentication before passing it.
-If you cancel, the original window for entering the passphrase will be displayed.
+After an appropriate passphrase is found in macOS Keychain, original pinentry-mac returns it to gpg-agent without interactive confirmation.
+But pinentry-mac-touchid requests Touch ID authentication before accessing to gpg-agent, not Keychain.
+If you cancel the authentication, the original pinentry-mac's window is displayed to enter a passphrase of GnuPG.
 
 ## Prerequisites 🫆
-Before installation of pinentry-mac-touchid, it is recommended to build original pinentry-mac to verify your environment and libraries with Homebrew or MacPorts.
-Also You should use original pinentry-mac to understand its expected behaviors and required permissions of iCloud keychain.
+Before installing pinentry-mac-touchid, it is recommended to build original pinentry-mac to check your environment and libraries with MacPorts or Homebrew.
+Also You should use original pinentry-mac to understand its expected behaviors and required permissions of macOS Keychain.
 They are same as pinentry-mac-touchid.
 
 ### gpg-agent.conf:
@@ -18,18 +18,35 @@ pinentry-program /Applications/MacPorts/pinentry-mac.app/Contents/MacOS/pinentry
 ```
 
 ## Installation 🫆
-> ```sh
-> ./autogen.sh
-> ./configure --disable-doc --disable-ncurses --disable-silent-rules --enable-maintainer-mode
-> make
-> mv macosx/pinentry-mac-touchid.app your_favorite_folder
-> killall gpg-agent
+```sh
+% ./autogen.sh
+% ./configure --disable-doc --disable-ncurses --disable-silent-rules --enable-maintainer-mode
+% make
+% mv macosx/pinentry-mac-touchid.app your_favorite_folder
+% killall gpg-agent
+```
 
 ### gpg-agent.conf:
 ```
 default-cache-ttl 0
 max-cache-ttl 0
 pinentry-program /your_favorite_folder/pinentry-mac-touchid.app/Contents/MacOS/pinentry-mac-touchid
+```
+
+## With [Mew (Messaging in the Emacs World)](https://github.com/kazu-yamamoto/Mew) 📫
+pinentry-mac-touchid can be used for a master password of Mew with asymmetric (public key) encryption support.
+You need to specify asymmetric (public key) encryption and redefine "mew-passwd-adjust-args" function to call a pinentry program from gpg-agent.
+
+### .mew.el:
+``` emacs-lisp
+(setopt mew-master-passwd-encryption 'asymmetric)
+(defun mew-passwd-adjust-args (args &optional pinentry-mode)
+  (if mew-passwd-agent-hack
+      (cond
+       (pinentry-mode (cons "--no-symkey-cache" (cons "--pinentry-mode" (cons pinentry-mode args))))
+       ((eq mew-master-passwd-encryption 'symmetric) (cons "--no-symkey-cache" (cons "--pinentry-mode" (cons "loopback" args))))
+       (t args))
+    args))
 ```
 
 ## Acknowledgment 🫆
